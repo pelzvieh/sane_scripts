@@ -1,0 +1,24 @@
+#!/bin/bash
+# (c) 2019 Andreas Feldner
+# Published under GPL 3, see accompanying documentation
+#
+# This script is intended to be put to /etc/scanbd/ and will be called by udevd if the scanner configured in
+# 79-udev-epson.rules is switched off. It will move all scanned files from directory $base_dir/offen to $base_dir/closed_xxx.
+# There it will be read off and PDF-OCR-converted by cron_convert.sh.
+# 
+# you can change base_dir, but then do so in all scripts of this package
+base_dir=/var/lib/saned
+# Drop root privilege
+[ "$(id -un)" = "root" ] && { logger -t "scanbd: $0" "Dropping root" ; su saned -s /bin/bash -c "$0"; exit $?; }
+
+# directory with collected scan pages
+output_dir=${base_dir}/offen
+[ -d "$output_dir" ] || { logger -t "scanbd: $0" "no open directory of scans to close"; exit 0; }
+
+target_dir=$(mktemp -d ${base_dir}/closed_XXXX) || { logger -t "scanbd: $0" "failed to create closed directory"; exit 1; }
+mv "$output_dir"/* "$target_dir" && rmdir "$output_dir" || { logger -t "scanbd: $0" "failed to move scan files to closed directory"; exit 2; }
+logger -t "scanbd: $0" "closed collection directory to $target_dir"
+
+# launch converter (previously cron)
+/etc/scanbd/cron_convert.sh
+

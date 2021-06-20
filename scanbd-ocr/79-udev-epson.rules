@@ -1,0 +1,7 @@
+# (c) 2019 Andreas Feldner
+# Published under GPL 3, see accompanying documentation
+# The idea is that switching off the scanner signals the end of scanning a batch of originals that should go to one searchable PDF
+# This file is to be placed under /etc/udev/rules.d
+# Unfortunately it is hard coded for a specific scanner model. You will need to replace idVendor, idProduct, manufacturer and PRODUCT to your needs.
+ACTION=="add", ATTRS{manufacturer}=="EPSON", DRIVERS=="usb", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="010a", MODE="0777"
+ACTION=="remove", ENV{PRODUCT}=="4b8/10a/104", DRIVERS=="usb", SUBSYSTEMS=="usb", RUN+="/etc/scanbd/epson_scan_off.script"

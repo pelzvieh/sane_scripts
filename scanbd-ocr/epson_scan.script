@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# (c) 2017 Andreas Feldner
+# Published under GPL 3, c.f. accompanying documentation
+# You might want to configure base_dir below, but do so with all scripts supplied in this package.
+base_dir=/var/lib/saned
+
+# Drop root privilege
+[ "$(id -un)" = "root" ] && { logger -t "scanbd: $0" "Dropping root" ; su saned -s /bin/bash -c "$0"; exit $?; }
+
+# Output dir
+output_dir=${base_dir}/offen
+output_file=$(date +%F_%T).png
+
+logger -t "scanbd: $0" "Begin of $SCANBD_ACTION for device $SCANBD_DEVICE, running as $(id -un)"
+# create directory if not exists
+mkdir -p "$output_dir"
+
+scanimage -d $SCANBD_DEVICE --mode Color --depth 8 --resolution 300 --format tiff | convert - "$output_dir/$output_file"
+
+logger -t "scanbd: $0" "End   of $SCANBD_ACTION for device $SCANBD_DEVICE"
